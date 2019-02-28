@@ -1,0 +1,10 @@
+sqoop import \
+   --connect jdbc:mysql://ms.itversity.com/h1b_db \
+   --username h1b_user \
+   --password itversity \
+   --table h1b_data \
+   --where "case_status = 'CERTIFIED'" \
+   --target-dir /user/tanyaparsh/problem15/solution/ \
+   --as-avrodatafile 
+
+

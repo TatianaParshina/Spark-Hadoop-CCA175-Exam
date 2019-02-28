@@ -1,0 +1,25 @@
+mysql -u h1b_user -h ms.itversity.com -p
+
+CREATE TABLE h1b_data_tanyaparsh (
+  ID                 INT, 
+  CASE_STATUS        VARCHAR(50), 
+  EMPLOYER_NAME      VARCHAR(100), 
+  SOC_NAME           VARCHAR(100), 
+  JOB_TITLE          VARCHAR(100), 
+  FULL_TIME_POSITION VARCHAR(50), 
+  PREVAILING_WAGE    FLOAT, 
+  YEAR               INT, 
+  WORKSITE           VARCHAR(50), 
+  LONGITUDE          VARCHAR(50), 
+  LATITUDE           VARCHAR(50));
+
+
+sqoop export \
+   --connect jdbc:mysql://ms.itversity.com/h1b_export \
+   --username h1b_user \
+   --password itversity \
+   --table h1b_data_tanyaparsh \
+   --export-dir /public/h1b/h1b_data_to_be_exported \
+   --input-null-string 'NA' \
+   --input-fields-terminated-by '\001'
+

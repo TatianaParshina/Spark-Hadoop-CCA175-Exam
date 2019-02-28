@@ -1,0 +1,19 @@
+#Get the customers who have not placed any orders, sorted by customer_lname and then customer_fname
+
+hadoop fs -put /data/retail_db /user/tanyaparsh/problem2/solution/test/
+
+pyspark --master yarn --conf spark.ui.port=12888
+
+orders = sc.textFile("/user/tanyaparsh/problem2/solution/test/retail_db/orders/")
+customers = sc.textFile("/user/tanyaparsh/problem2/solution/test/retail_db/customers/")
+
+ordersMap = orders.map(lambda o: (int(o.split(",")[2]), 1))
+customersMap = customers.map(lambda o: (int(o.split(",")[0]), (o.split(",")[1], o.split(",")[2])))
+
+ordCustomersJoin = customersMap.subtract(ordersMap)
+ordCustomersJoinMap = ordCustomersJoin.map(lambda o: o[1])
+ordCustomersJoinMapSorted1 = ordCustomersJoinMap.sortBy(lambda x: x)
+
+ordCustomersJoinMapSorted1.coalesce(1).saveAsTextFile("/user/tanyaparsh/problem2/solution/test2/ordCustomersJoinMap/")
+
+

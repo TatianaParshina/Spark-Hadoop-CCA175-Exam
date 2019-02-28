@@ -1,0 +1,21 @@
+pyspark --master yarn --conf spark.ui.port=12888
+
+
+crime = sc.textFile("/public/crime/csv")
+crimeMap = crime.map(lambda c: (c.split(",")[5], c.split(",")[7]))
+
+crimeFilter = crimeMap.filter(lambda c: c[1] == 'RESIDENCE')
+
+crimeFilterMap = crimeFilter.map(lambda c: (c[0], 1))
+
+from operator import add
+crimeFilterMapReduce = crimeFilterMap.reduceByKey(add)
+
+crimeDF = crimeFilterMapReduce.toDF(schema=["crime_type", "incident_count"]).orderBy("incident_count", ascending=False).limit(3)
+
+
+crimeDF.write.format("json").save("/user/tanyaparsh/problem3/solution/")
+
+#validate
+sqlContext.load("/user/tanyaparsh/problem3/solution/", "json").show()
+

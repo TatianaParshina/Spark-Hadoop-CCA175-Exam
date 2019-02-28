@@ -1,0 +1,17 @@
+pyspark --master yarn --conf spark.ui.port=12888
+
+nyse = sc.textFile("/public/nyse")
+
+nyseMap = nyse.map(lambda n: n.split(","))
+
+nyseDF = nyseMap.toDF(schema=["stockticker", "transactiondate", "openprice", "highprice", "lowprice", "closeprice", "volume"])
+
+nyseDF.registerTempTable("nyse")
+
+res = sqlContext.sql("select concat(stockticker,':',transactiondate,':',openprice,':', highprice, ':', lowprice, ':', closeprice, ':', volume) from nyse order by transactiondate, int(volume) desc limit 10")
+
+res.show()
+
+res.write.save("/user/tanyaparsh/problem16/solution/", "text")
+
+sqlContext.read.load("/user/tanyaparsh/problem16/solution/", "text").show()

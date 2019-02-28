@@ -1,0 +1,106 @@
+#1 Import orders table from mysql as text file to the destination /user/cloudera/problem5/text. Fields should be terminated by a tab character ("\t") character and lines should be terminated by new line character ("\n"). 
+
+	sqoop import
+			--connect
+			--table orders
+			--target-dir /user/cloudera/problem5/text
+			--fields-terminated-by "\t"
+			--lines-terminated-by "\n"
+			--as-textfile
+
+
+#2 Import orders table from mysql  into hdfs to the destination /user/cloudera/problem5/avro. File should be stored as avro file.
+
+	sqoop import
+		--connect
+		--table orders
+		--target-dir /user/cloudera/problem5/avro
+		--as-avrodatafile
+
+
+#3 Import orders table from mysql  into hdfs  to folders /user/cloudera/problem5/parquet. File should be stored as parquet file.
+
+	sqoop import
+		--table orders
+		--targe-dir /user/cloudera/problem5/parquet
+		--as-parquetfile
+
+
+#4 Transform/Convert data-files at /user/cloudera/problem5/avro and store the converted file at the following locations and file formats
+	#save the data to hdfs using snappy compression as parquet file at /user/cloudera/problem5/parquet-snappy-compress
+
+		pyspark --master yarn --packages com.databricks:spark-avro_2.10:2.0.1
+		dataFile = sqlContext.read.load("/user/cloudera/problem5/avro", "com.databricks.spark.avro")
+
+		sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
+		
+		dataFile.write.save("/user/cloudera/problem5/parquet-snappy-compress", "parquet")
+
+	#save the data to hdfs using gzip compression as text file at /user/cloudera/problem5/text-gzip-compress
+		dataTxt = dataFile.rdd.map(lambda d: d[0] + ',' + d[1])
+		
+		dataTxt.saveAsTextFile("/user/cloudera/problem5/text-gzip-compress", "org.apache.hadoop.io.compress.GzipCodec")
+
+	#save the data to hdfs using no compression as sequence file at /user/cloudera/problem5/sequence
+		sqlContext.setConf("spark.sql.parquet.compression.codec", "uncompressed")
+		
+		dataRdd = dataFile.map(lambda x: x[0] + "\t" + x[1])
+
+		dataRdd.saveAsSequenceFile("/user/problem5/sequence")
+
+	#save the data to hdfs using snappy compression as text file at /user/cloudera/problem5/text-snappy-compress
+		1) spark
+		dataTxt = dataFile.rdd.map(lambda d: d[0] + ',' + d[1])
+		
+		dataTxt.saveAsTextFile("/user/cloudera/problem5/text-gzip-compress", "org.apache.hadoop.io.compress.SnappyCodec")
+
+		2) sqoop
+		sqoop import
+			--connect
+			--table orders
+			--target-dir /user/cloudera/problem5/text-snappy-compress
+			--as-textfile
+			--compress
+			--compression-codec org.apache.hadoop.io.compress.SnappyCodec
+
+#5 Transform/Convert data-files at /user/cloudera/problem5/parquet-snappy-compress and store the converted file at the following locations and file formats
+	#save the data to hdfs using no compression as parquet file at /user/cloudera/problem5/parquet-no-compress
+
+		parquetFile = sqlContext.read.load("/user/cloudera/problem5/parquet-snappy-compress", "parquet")
+
+		sqlContext.setConf("spark.sql.parquet.compression.codec", "uncompressed")
+
+		parquetFile.write.save("/user/cloudera/problem5/parquet-no-compress", "parquet")
+
+	#save the data to hdfs using snappy compression as avro file at /user/cloudera/problem5/avro-snappy
+
+		sqlContext.setConf("spark.sql.parquet.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec")
+		parquetFile.write.save("/user/cloudera/problem5/parquet-no-compress", "org.databricks.avro")
+
+
+#6 Transform/Convert data-files at /user/cloudera/problem5/avro-snappy and store the converted file at the following locations and file formats
+	#save the data to hdfs using no compression as json file at /user/cloudera/problem5/json-no-compress
+
+		avroFile = sqlContext.read.load("/user/cloudera/problem5/parquet-snappy-compress", "org.databricks.avro")
+
+		sqlContext.setConf("spark.sql.parquet.compression.codec", "uncompressed")
+
+		avroFile.write.save("/user/cloudera/problem5/parquet-no-compress", "json")
+
+	#save the data to hdfs using gzip compression as json file at /user/cloudera/problem5/json-gzip
+
+		sqlContext.setConf("spark.sql.parquet.compression.codec", "org.apache.hadoop.io.compress.GzipCodec")
+
+		avroFile.write.save("/user/cloudera/problem5/parquet-no-compress", "json")
+
+#7 Transform/Convert data-files at  /user/cloudera/problem5/json-gzip and store the converted file at the following locations and file formats
+	#save the data to as comma separated text using gzip compression at   /user/cloudera/problem5/csv-gzip
+
+	jsonFile = sqlContext.read.load("/user/cloudera/problem5/parquet-snappy-compress", "json")
+	jsonFile.map(lambda a: a[0] + ',' + a[1]).saveAsTextFile("user/folder", "org.apache.hadoop.io.compress.GzipCodec")
+
+
+#8 Using spark access data at /user/cloudera/problem5/sequence and stored it back to hdfs using no compression as ORC file to HDFS to destination /user/cloudera/problem5/orc 
+	
+		crime = sc.sequenceFile("user/folder/")
+		

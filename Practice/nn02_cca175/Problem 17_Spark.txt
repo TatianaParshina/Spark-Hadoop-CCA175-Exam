@@ -1,0 +1,23 @@
+pyspark --master yarn --conf spark.ui.port=12888 --packages com.databricks:spark-avro_2.10:2.0.1
+
+nyse = sc.textFile("/public/nyse")
+
+nyseSymbols = sc.textFile("/public/nyse_symbols")
+
+nyseMap = nyse.map(lambda n: (n.split(",")[0], n.split(",")[1]))
+nyseSymbolsMap = nyseSymbols.map(lambda n: (n.split("\t")[0], n.split("\t")[1]))
+
+nyseMapDF = nyseMap.toDF(schema=["stock", "test"])
+nyseSymbolsDF = nyseSymbolsMap.toDF(schema=["short", "description"])
+
+nyseMapDF.registerTempTable("stocks")
+nyseSymbolsDF.registerTempTable("stockDescr")
+
+res = sqlContext.sql("select distinct stock from stocks left outer join stockDescr on stock=short where description is null")
+
+res.write.save("/user/tanyaparsh/problem17/solution/", "com.databricks.spark.avro")
+
+
+#validate
+sqlContext.read.load("/user/tanyaparsh/problem17/solution/", "com.databricks.spark.avro").show()
+

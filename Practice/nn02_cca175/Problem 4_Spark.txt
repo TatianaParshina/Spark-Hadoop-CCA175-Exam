@@ -1,0 +1,14 @@
+hadoop fs -put /data/nyse /user/tanyaparsh/nyse/
+
+pyspark --master yarn --conf spark.ui.port=12888
+
+stock = sc.textFile("/user/tanyaparsh/nyse/")
+
+stockMap = stock.map(lambda s: s.split(","))
+
+stockDF = stockMap.toDF(schema=["stockticker", "transactiondate", "openprice", "highprice", "lowprice", "closeprice", "volume"])
+
+stockDF.write.format("parquet").save("/user/tanyaparsh/problem4/solution/")
+
+#validate 
+sqlContext.load("/user/tanyaparsh/problem4/solution/", "parquet").show()

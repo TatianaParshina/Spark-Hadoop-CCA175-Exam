@@ -1,0 +1,9 @@
+pyspark --master yarn --conf spark.ui.port=12888
+
+h1b = sc.textFile("/public/h1b/h1b_data")
+
+h1bFirst = h1b.first()
+
+h1bFilter = h1b.filter(lambda o: o != h1bFirst)
+
+h1bFilter.saveAsTextFile("/user/tanyaparsh/problem9/solution/", "org.apache.hadoop.io.compress.SnappyCodec")

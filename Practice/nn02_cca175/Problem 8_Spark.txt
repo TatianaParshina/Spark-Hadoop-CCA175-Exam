@@ -1,0 +1,15 @@
+pyspark --master yarn --conf spark.ui.port=12888
+
+orders = sc.textFile("/public/retail_db/orders")
+ordersMap = orders.map(lambda o: o.split(","))
+
+ordersMapFilter = ordersMap.filter(lambda o: o[3] == 'PENDING_PAYMENT')
+
+ordersMapFilterSorted = ordersMapFilter.map(lambda o: (int(o[0]), (o[1], o[2] , o[3]))).sortByKey().map(lambda o: (o[0], o[1][0], o[1][1] , o[1][2]))
+
+ordersMapFilterSortedDF = ordersMapFilterSorted.toDF(schema=["order_id", "order_date", "order_customer_id", "order_status"])
+
+ordersMapFilterSortedDF.write.format("orc").save("/user/tanyaparsh/problem8/solution/")
+
+#validate
+sqlContext.read.load("/user/tanyaparsh/problem8/solution/", "orc").show()

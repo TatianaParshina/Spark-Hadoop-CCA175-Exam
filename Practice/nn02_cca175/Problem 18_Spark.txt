@@ -1,0 +1,17 @@
+pyspark --master yarn --conf spark.ui.port=12888
+
+stocks = sc.textFile("/public/nyse")
+symbols = sc.textFile("/public/nyse_symbols")
+
+stocksMap = stocks.map(lambda s: (s.split(",")[0], (s.split(",")[1], s.split(",")[2], s.split(",")[3], s.split(",")[4], s.split(",")[5], s.split(",")[6])))
+
+symbolsMap = symbols.map(lambda s: (s.split("\t")[0], s.split("\t")[1]))
+
+stockJoin = stocksMap.leftOuterJoin(symbolsMap)
+
+stockJoinMap = stockJoin.map(lambda s: (s[0], s[1][1], s[1][0][0], s[1][0][1], s[1][0][2], s[1][0][3], s[1][0][4], s[1][0][5]))
+
+stockJoinMap.saveAsTextFile("/user/tanyaparsh/problem18/solution/")
+
+#validate
+sqlContext.read.load("/user/tanyaparsh/problem18/solution/", "text").show()

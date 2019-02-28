@@ -1,0 +1,21 @@
+pyspark --master yarn --conf spark.ui.port=12888
+
+h1b = sc.textFile("/public/h1b/h1b_data")
+
+h1bFirst = h1b.first()
+
+h1bM = h1b.filter(lambda h: h != h1bFirst).filter(lambda h: h.split("\0")[7] != 'NA')
+
+h1bMap = h1bM.map(lambda h: (int(h.split("\0")[7]), h.split("\0")[1], h.split("\0")[2]))
+
+h1bMapDF = h1bMap.toDF(schema=["year", "status", "employer"])
+
+h1bMapDF.registerTempTable("h1b")
+
+res = sqlContext.sql("select employer as employer_name, count(*) as lca_count from h1b where status in ('WITHDRAWN', 'CERTIFIED-WITHDRAWN', 'DENIED') and year = 2016 group by employer order by lca_count desc limit 5")
+res.show()
+
+res.write.save("/user/tanyaparsh/problem12/solution/", "parquet")
+
+
+sqlContext.read.load("/user/tanyaparsh/problem12/solution/", "parquet").show()

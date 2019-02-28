@@ -1,0 +1,36 @@
+####### Configuration files #######
+
+#hadoop conf open from local
+	/etc/hadoop/conf/core-site.xml
+		fs.defaultFS - url for hdfs node
+		io.compression.codecs -> SnappyCodec
+	/etc/hadoop/conf/hdfs-site.xml
+		dfs.blocksize - block size to divide file 
+		dfs replication - fault-tolerance
+
+
+#check warehouse path for hive db
+	/etc/hive/conf
+		    <property>
+		      <name>hive.metastore.warehouse.dir</name>
+		      <value>/apps/hive/warehouse</value>
+		    </property>
+
+	hadoop fs -ls /apps/hive/warehouse/retail_db_txt.db;
+
+#Sqoop mysql jdbc
+	jdbc:mysql://ms.itversity.com/retail_db
+
+#Codec:
+	org.apache.hadoop.io.compress.SnappyCodec	
+	org.apache.hadoop.io.compress.GzipCodec	
+
+$ sqoop import -D org.apache.sqoop.splitter.allow_text_splitter=true\
+
+pyspark --master yarn \
+	    --packages com.databricks:spark-avro_2.10:2.0.1
+
+crime = sqlContext.read.load("/folder/", "com.databricks.spark.avro")
+
+#Codec 
+https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml

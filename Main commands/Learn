@@ -1,0 +1,18 @@
+	avro-tools getschema part-m-00000.avro > orders.avsc 
+
+	pyspark --master yarn \
+ 			--packages com.databricks:spark-avro_2.10:2.0.1
+
+ 	crime = sqlContext.read.load("/folder/", "com.databricks.spark.avro") 
+ 	crimeDF.write.save("/user/folder/", "com.databricks.spark.avro") 
+
+
+# change compression codec (spark dataframse)
+	sqlContext.setConf("spark.sql.parquet.compression.codec", "uncompressed")
+	sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
+	sqlContext.setConf("spark.sql.avro.compression.codec", "gzip");
+
+	df_rdd = self.df.toJSON()
+	df_rdd.saveAsTextFile(filename,
+	compressionCodecClass="org.apache.hadoop.io.compress.GzipCodec") 
+

@@ -1,0 +1,99 @@
+####### Unix #######
+
+# get hostname:
+	hostname -f
+
+#login to remote server (check connection, 3306 - mysql port)
+	telnet localhost 3306
+	telnet <servername> 3306
+
+	! don't use localhost
+
+#Outputs 10 lines
+	hadoop fs -tail file_name.txt
+
+#Change directory
+	cd /data/folder
+
+#Create directory
+	mkdir 
+
+#Show files in directory
+	ls -lsr 
+	ls -lsr directory_name
+	hadoop fs -ls /public/retail_db/order_items
+
+#Delete directory
+	rm directory_name
+
+#Delete directory and subdirectories
+	rm -r directory_name
+
+# Copy all files in directory
+	hadoop fs -mv /user/folder1/* /user/folder2/products/
+
+#Copy from local to hdfs
+	hadoop fs -put /local/data/retail_db /hdfs/user/
+	hadoop fs -copyFromLocal orders.avsc /user/hive/schemas/order
+
+#Copy from hdfs to local
+	hadoop fs -get hdfs://nn.example.com/user/hadoop/file localfile
+
+
+#Current directory
+	pwd
+
+#Change permission
+	hadoop fs -chmod 765 /user/cloudera/problem2/products/*
+		7 - owner
+		6 - group
+		5 - others
+
+		7 - read, write, execute (full permission)
+		6 - read, write
+		5 - read, execution
+		4 - read
+		3 - write, execution
+		2 - write
+		1 - execution
+		0 - no permission
+
+#vi
+	#open file editor
+		vi file_name
+	#quit without saving
+		ESC - :q!
+	#write and quit
+		:wq
+	#insert
+		:i
+	#search word in file
+		ESC /codec Enter
+
+#connection refused - hdfs service is down
+	start cloudera vm -> cloudera manager -> username/password -> clouder/cloudera services will have ? - > restart cloudera manager
+
+
+#current java process
+	jps
+
+#current user
+	whoami
+
+#processes run by hdfs
+	sudo -u hdfs jps
+
+#list of all users
+	cat /etc/password
+
+#increase font
+	CTRL+ “’+” -> Browser
+	CTRL+SHIFT+ “+” -> TERMINAL
+	For sublimetext, go to PREFERENCES and increase it
+
+#Run script:
+	./script.sh
+
+#copy/paste
+	Ctrl+c/v for Sublime Text 
+	Ctrl+Shift+c/v for Ubuntu

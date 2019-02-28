@@ -1,0 +1,118 @@
+####### Spark #######
+# connect
+	pyspark --master yarn \
+	        --conf spark.ui.port=12888 \
+	        --num-executors 10 \
+	        --executor-memory 3g \
+	        --executor-cores 2 \
+	        --packages com.databricks:spark-avro_2.10:2.0.1
+	help(sc)
+	Q - quit
+	help(crimeRDD.saveAsTextFile)
+
+# Run python script as application on cluster
+	spark-submit --master yarn 
+				 --conf spark.ui.port=12789 
+				 --num-executors 2 
+				 --executor-memory 512M \
+				 DailyRevenueScript.py
+# read file
+	# return RDD
+	crime = sc.textFile("/user/folder/csv")
+	crime = sc.sequenceFile("/user/folder/")
+
+	# return DF
+crime = sqlContext.read.load("/folder/", "com.databricks.spark.avro")
+
+# transformations
+#RDD
+	crimeFirst = crime.first()
+
+	crimeMap = crime.map(lambda c: (c.split(",")[0], c.split(",")[1]))
+	crimeMap = crime.flatMap(lambda t: t.split(" "))
+
+	crimeFilter = crimeMap.filter(lambda c: c != crimeFirst)
+
+	from operator import add, max, min, avg
+	crimeReduce = crimeFilterMap.reduceByKey(add)
+	highestValue = crimeFilterMap.reduceByKey(max)
+
+	totalProducts = crimeFilterMap.countByKey()
+
+	crimeSubtr = customersMap.subtract(ordersMap)
+	crimeJoin = crimeMap.rightOuterJoin(crimeMap)
+	crimeJoin = crimeMap.leftOuterJoin(crimeMap)
+
+	crimeSort = crimeMap.sortBy(lambda x: x)
+#DF
+	from pyspark.sql.functions import count, sum, avg, max, min
+   	
+   	orders.groupBy("date", "status"). \
+   			agg(count(*)).alias("total_orders"). \
+   			agg(sum(subtotal)).alias("total_amount"). \
+   			orderBy(desc("date"), "status")
+
+# DF to RDD
+	crimeMap = crimeDF.rdd.map(lambda c: c[0])
+
+#RDD to DF
+	crimeDF = crimeMap.toDF(schema=["id", "name"])
+	crimeDF.registerTempTable("orders")
+
+#Spark SQL
+	resRdd = sqlContext.sql("select order_date from orders limit 5")
+	resMap = res.map(lambda r: str(r[0]) + ":" + str(r[1]))
+
+#save DF or RDD to file
+	crimeDF.write.save("/user/folder/", "json")
+	crimeDF.write.save("/user/folder/", "parquet")
+	crimeDF.write.save("/user/folder/", "orc")
+
+	crimeDF.write.save("/user/folder/", "com.databricks.spark.avro")
+	resMap.write.save("/user/folder/", "com.databricks.spark.avro")
+
+	crimeDF.coalesce(8).write.save("/user/folder/", "json")
+
+	dataRdd.saveAsSequenceFile("/user/sequenceFolder")
+
+# save rdd to text file
+	crimeMap.saveAsTextFile("/user/folder/", compressionCodecClass='org.apache.hadoop.io.compress.GzipCodec')
+	#can be saved using sqoop from table
+
+# validate
+	sqlContext.read.load("/user/folder/", "json").show()
+	sqlContext.read.load("/user/folder/", "parquet").show()
+	sqlContext.read.load("/user/folder/", "text").show()
+sqlContext.read.load("/user/folder/", "com.databricks.spark.avro").show()
+
+# change compression codec
+sqlContext.setConf("spark.sql.parquet.compression.codec", "uncompressed")
+	sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
+	sqlContext.setConf("spark.sql.avro.compression.codec", "gzip");
+	sqlContext.setConf("spark.sql.parquet.compression.codec", "lzo");
+
+	df_rdd = self.df.toJSON() 
+	df_rdd.saveAsTextFile(filename,
+	compressionCodecClass="org.apache.hadoop.io.compress.GzipCodec")
+
+# additional commands
+	productsRaw = open("/products/part-00000").read().splitlines()
+	productsRDD= sc.parallelize(productsRaw)
+
+	# min value
+	minPerId = orвMap.reduceByKey(lambda x, y: x if (x<y) else y)
+
+	# Result should be (1, (299,98, 1))
+    revenuePerOrder = orderMap.aggregateByKey((initialCount), 
+    							(addToCounts, sumPartitionCounts))
+
+	## Ranking. Get top N products by price
+		rddSorted = prMap.sortByKey(False)
+		for i in rddSorted.map(lambda p: p[1]).take(10): print(i)
+
+		topNProducts = prMap.top(5, key=lambda k: k[4])
+		topNProducts = prMap.takeOrdered(5, key=lambda k: -k[4])
+
+	#takewhile process until condition, not all records as using filter
+		import itertools as it
+		topN = it.takewhile(lambda k: k[4] in topNPrices, l)

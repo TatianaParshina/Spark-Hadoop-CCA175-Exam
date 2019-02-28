@@ -1,0 +1,7 @@
+sqoop import 
+   --connect jdbc:mysql://ms.itversity.com/h1b_db \
+   --username h1b_user \
+   --password itversity \
+   --hive-import \
+   --hive-database tanyaparshdb \
+   --create-hive-table

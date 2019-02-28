@@ -1,0 +1,73 @@
+#1 Using sqoop, import orders table into hdfs to folders /user/cloudera/problem1/orders. File should be loaded as Avro File and use snappy compression
+
+sqoop import
+	--connection jdbc:mysql://db.foo.com/corp
+	--table orders
+	--target-dir /user/cloudera/problem1/orders
+	--as-avrodatafile
+	--compress
+	--compression-codec org.apache.hadoop.io.compress.SnappyCodec
+
+# 2 Using sqoop, import order_items  table into hdfs to folders /user/cloudera/problem1/order-items. Files should be loaded as avro file and use snappy compression
+
+sqoop import
+	--connection
+	--table order_items
+	--target-dir /user/cloudera/problem1/order-items
+	--as-avrodatafile
+	--compress
+	--compression-codec org.apache.hadoop.io.compress.SnappyCodec
+
+
+# 3 Using Spark Scala load data at /user/cloudera/problem1/orders and /user/cloudera/problem1/orders-items items as dataframes
+
+	pyspark --master yarn 
+			--packages com.databricks:spark-avro_2.10:2.0.1
+
+	orders = sqlContext.read.load("/user/cloudera/problem1/orders", "com.databricks.spark.avro")
+	orderItems = sqlContext.read.load("/user/cloudera/problem1/orders-items", "com.databricks.spark.avro")
+
+
+#4 Expected Intermediate Result: Order_Date , Order_status, total_orders, total_amount. In plain english, please find total orders and total amount per status per day. The result should be sorted by order date in descending, order status in ascending and total amount in descending and total orders in ascending. 
+
+# SQL
+	orders.registerTempTable("orders")
+	orderItems.registerTempTable("orderItems")
+
+	res = sqlCobtext.sql("select order_date, order_status, count(*) as total_orders, sum(*) as total_amount from orders o join orderItems oi on o.order_id=oi.order_item_order_id group by order_date, order_status order by order_date desc, order_status, total_amount desc, total_orders")
+
+# DF ???
+	from pyspark.sql.functions import count, sum, avg, max, min
+   	
+   	orders.groupBy("order_date", "order_status").agg(count(*)).alias("total_orders").agg(sum(subtotal)).alias("total_amount").orderBy(desc("order_date"), "order_status", desc("total_amount", "total_orders")
+
+# RDD ???
+
+
+
+# 5 Store the result as parquet file into hdfs using gzip compression under folder
+
+sqlContext.setConf("spark.sql.parquet.compression.codec","gzip");
+dataFrameResult.write.format("parquet").save("/user/cloudera/problem1/result4a-gzip");
+
+
+# 6 Store the result as parquet file into hdfs using snappy compression under folder
+
+sqlContext.setConf("spark.sql.parquet.compression.codec","snappy");
+dataFrameResult.write.format("parquet").save("/user/cloudera/problem1/result4a-gzip");
+
+# 7 Store the result as CSV file into hdfs using No compression under folder
+
+dataFrameResult.map(lambda x: x[0] + "," + x[1]).saveAsTextFile("/user/cloudera/problem1/result4a-csv")
+
+# 8 create a mysql table named result and load data from /user/cloudera/problem1/result4a-csv to mysql table named result 
+
+mysql -h hostname -u user -p pwd
+create table result (id int, name varchar(100));
+
+
+sqoop export 
+	--connect
+	--table result
+	--export-dir user/cloudera/problem1/result4a-csv
+	--columns "id, name"

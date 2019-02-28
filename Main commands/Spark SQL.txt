@@ -1,0 +1,28 @@
+####### Spark SQL #######
+#run spark sql
+	spark-sql --master yarn --conf spark.ui.port=12567
+	show databases;
+
+#from pyspark
+	sqlContext.sql("show tables").show()
+	sqlContext.sql("select * from orders").printSchema()
+
+# Change conf properties, run with 2 tasks:
+	sqlContext.setConf("spark.sql.shuffle.pertitions", "2")
+
+
+#Modify table
+
+	alter table products add primary key (pr_id);
+	
+	alter table products add column (num int, description varchar(100))
+	
+	update products set num = 1  where price > 500;
+	
+
+#Additional
+#convert RDD to Row
+	from pyspark.sql import Row
+
+	ordersRDD = sc.textFile("/public/retail_db/orders")
+	ordersDF = ordersRDD.map(lambda o: Row(o[1], o[2])).toDF()

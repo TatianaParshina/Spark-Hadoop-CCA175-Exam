@@ -1,0 +1,22 @@
+pyspark --master yarn --conf spark.ui.port=12888
+
+h1b = sc.textFile("/public/h1b/h1b_data")
+
+h1bFirst = h1b.first()
+
+h1bMap = h1b.filter(lambda h: h != h1bFirst).map(lambda h: (h.split("\0")[1], h.split("\0")[7])).filter(lambda h: h[1] !='NA').filter(lambda h: int(h[1]) == 2016)
+
+from operator import add
+
+h1bMapGroup = h1bMap.map(lambda h: (h, 1))
+
+h1bMapGroupReduce = h1bMapGroup.reduceByKey(add)
+
+h1bMapGroupReduceMap = h1bMapGroupReduce.map(lambda h: (h[0][1], h[0][0], h[1]))
+
+h1bMapGroupReduceMapDF = h1bMapGroupReduceMap.toDF(schema=["year", "status", "count"])
+
+h1bMapGroupReduceMapDF.write.save("/user/tanyaparsh/problem11/solution/", "json")
+
+#validate
+sqlContext.read.load("/user/tanyaparsh/problem11/solution/", "json").show()

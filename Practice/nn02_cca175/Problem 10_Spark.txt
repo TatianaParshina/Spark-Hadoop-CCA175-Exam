@@ -1,0 +1,14 @@
+pyspark --master yarn --conf spark.ui.port=12888
+
+h1b = sc.textFile("/public/h1b/h1b_data")
+
+h1bFirst = h1b.first()
+
+h1bMap = h1b.filter(lambda h: h != h1bFirst).map(lambda h: h.split("\0")[7]).filter(lambda h: h != 'NA')
+
+from operator import add
+h1bMapGroup = h1bMap.map(lambda h: (h, 1)).reduceByKey(add)
+
+h1bMapGroupMap = h1bMapGroup.map(lambda h: h[0] + "\0" + str(h[1]))
+
+h1bMapGroupMap.saveAsTextFile("/user/tanyaparsh/problem10/solution/")

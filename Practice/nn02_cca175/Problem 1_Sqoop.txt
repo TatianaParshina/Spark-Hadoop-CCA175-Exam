@@ -1,0 +1,12 @@
+$ sqoop import --connect jdbc:mysql://ms.itversity.com/retail_db \
+     --username retail_user \
+     --password itversity \
+     --table orders \
+     --target-dir /user/tanyaparsh/problem1/solution/ \
+     --as-textfile	\
+     --fields-terminated-by ","
+
+
+#Validate
+hadoop fs -ls /user/tanyaparsh/problem1/solution/
+hadoop fs -tail /user/tanyaparsh/problem1/solution/part-m-00000

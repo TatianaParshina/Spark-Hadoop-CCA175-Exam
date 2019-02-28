@@ -1,0 +1,22 @@
+pyspark --master yarn --conf spark.ui.port=12888
+
+h1b = sc.textFile("/public/h1b/h1b_data_noheader")
+
+h1bMap = h1b.map(lambda h: (h.split("\0")[7], h.split("\0")[2]))
+
+h1bMapFilter = h1bMap.filter(lambda h: h[0] != 'NA')
+
+h1bMapFilterDF = h1bMapFilter.toDF(schema=["year", "company"])
+
+h1bMapFilterDF.registerTempTable("comp")
+
+res = sqlContext.sql("select year, count(company) from comp group by year")
+
+res.show()
+
+resMap = res.map(lambda r: (r[0]+'\t'+str(r[1])))
+resMap.saveAsTextFile("/user/tanyaparsh/problem19/solution/")
+
+
+#validate
+sqlContext.load("/user/tanyaparsh/problem19/solution/", "text").show()

@@ -1,0 +1,60 @@
+#Show files under directory
+	hadoop fs -ls /public/retail_db/order_items
+
+#Copy from local to hdfs
+	hadoop fs -put /local/data/retail_db /hdfs/user/test/
+	hadoop fs -copyFromLocal orders.avsc /user/hive/schemas/order
+
+#Copy from hdfs to local
+	hadoop fs -get hdfs://nn.example.com/user/hadoop/file localfile
+
+
+#pyspark
+	help(sc)
+	Q - quit
+	#info about function
+	help(crimeRDD.saveAsTextFile)
+
+
+#Conf files. Open from local 
+	vi /etc/hadoop/conf/core-site.xml
+		fs.defaultFS - url for hdfs node
+		# io.compression.codecs -> SnappyCodec
+
+	vi /etc/hadoop/conf/hdfs-site.xml
+
+		dfs.blocksize - block size to divide file 
+		dfs replication - fault-tolerance
+
+#Compressions from Apache. Just add org.apache.hadoop.io.compress 
+	BZip2Codec, DefaultCodec, DeflateCodec, GzipCodec, Lz4Codec, SnappyCodec
+
+#Get avro schema (from local) input_file -> outputfile
+	avro-tools getschema part-m-00000.avro > orders.avsc
+
+
+
+# ?? execute pyspark file
+
+# ?? scala
+
+# ?? Impala
+
+# use help
+
+# default value for min,max?
+
+#install cloudera vm
+
+
+CTRL+ “’+” -> Browser
+CTRL+SHIFT+ “+” -> TERMINAL
+For sublimetext, go to PREFERENCES and increase it
+
+
+
+Run script:
+	./script.sh
+
+
+copy & past (Ctrl+c/v for Sublime Text and Ctrl+Shift+c/v for Ubuntu)

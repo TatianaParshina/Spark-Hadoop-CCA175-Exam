@@ -1,0 +1,23 @@
+pyspark --master yarn \
+        --conf spark.ui.port=12888 \
+        --num-executors 10 \
+        --executor-memory 3g \
+        --executor-cores 2 \
+        --packages com.databricks:spark-avro_2.10:2.0.1
+
+
+textWriter = sc.textFile("/public/randomtextwriter")
+
+textWriterMap = textWriter.flatMap(lambda t: t.split(" "))
+
+textWriterMap2 = textWriterMap.map(lambda t: (t, 1))
+
+from operator import add
+textWriterMapReduce = textWriterMap2.reduceByKey(add)
+textWriterMapReduceDF = textWriterMapReduce.toDF(schema=["word", "count"])
+
+textWriterMapReduceDF.coalesce(8).write.save("/user/tanyaparsh/problem5/solution/", "com.databricks.spark.avro")
+
+
+#validate
+sqlContext.load("/user/tanyaparsh/problem5/solution/", "com.databricks.spark.avro").show()

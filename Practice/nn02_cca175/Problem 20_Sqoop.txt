@@ -1,0 +1,12 @@
+sqoop import -D org.apache.sqoop.splitter.allow_text_splitter=true\
+   --connect jdbc:mysql://ms.itversity.com/h1b_db \
+   --username h1b_user \
+   --password itversity \
+   --query 'select employer_name, case_status, count(*) as count from h1b_data h WHERE $CONDITIONS group by employer_name, case_status order by employer_name, count desc' \
+   --split-by case_status \
+   --target-dir /user/tanyaparsh/problem20/solution/ \
+   --as-textfile \
+   --fields-terminated-by '\t'
+
+   # validate mysql connection
+   mysql -h ms.itversity.com -u h1b_user -p

@@ -1,0 +1,30 @@
+pyspark --master yarn --conf spark.ui.port=12888
+
+orders = sc.textFile("/public/retail_db/orders")
+customers = sc.textFile("/public/retail_db/customers")
+
+ordersMap = orders.map(lambda o: (o.split(",")[2], o.split(",")[0]))
+
+customersMap = customers.map(lambda c: ((c.split(",")[0], c.split(",")[1], c.split(",")[2]), c.split(",")[7]))
+
+customersMapFilter = customersMap.filter(lambda c: c[1] == 'TX')
+
+customersMapFilterMap = customersMapFilter.map(lambda c: (c[0][0], (c[0][1], c[0][2])))
+
+ordersCustomersJoin = ordersMap.rightOuterJoin(customersMapFilterMap)
+
+ordersCustomersJoinCount = ordersCustomersJoin.map(lambda o: (o[0], 1))
+
+from operator import add
+ordersCustomersJoinReduce = ordersCustomersJoinCount.reduceByKey(add)
+
+ordersCustomersJoinReduceName = ordersCustomersJoinReduce.join(customersMapFilterMap)
+
+ordersCustomersJoinReduceNameMap = ordersCustomersJoinReduceName.map(lambda o: o[1][1][0] + "\t" + o[1][1][1] + "\t" + str(o[1][0]))
+
+
+
+ordersCustomersJoinReduceNameMap.saveAsTextFile("/user/tanyaparsh/problem6/solution/")
+
+#validate
+sqlContext.load("/user/tanyaparsh/problem6/solution/", "text").show()

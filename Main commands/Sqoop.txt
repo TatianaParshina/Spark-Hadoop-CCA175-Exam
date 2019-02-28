@@ -1,0 +1,119 @@
+####### Sqoop #######
+#Sqoop main commands
+   sqoop version
+   sqoop list-databases --connect jdbc:..
+   sqoop list-tables --connect jdbc:..
+
+#Connect to Mysql
+   mysql -u user_name -h hostname -p
+
+$ sqoop import -D org.apache.sqoop.splitter.allow_text_splitter=true\
+     --connect jdbc:mysql://hostname/db_name \
+     --username user_name \
+     --password pswrd \
+     --table table_name \
+     --columns order_id, total \
+     --where "case_status = 'CERTIFIED'" \
+     --target-dir /user/folder/ \
+     --as-textfile   \
+     --fields-terminated-by "," \   (default , )
+     --lines-terminated-by ":"      (defauld \n)
+     --num-mappers 1                (default 4)
+     --compress
+     --compression-codec org.apache.hadoop.io.compress.SnappyCodec
+
+   # file formats
+   --as-avrodatafile
+   --as-parquetfile
+   --as-sequencefile
+   --as-textfile (default)
+
+   # instead of table, column, where:
+   --query 'select ... $conditions..'
+   --split-by case_status \
+
+# Sqoop import (additional)
+      --delete-target-dir 
+      --append 
+      --boundary-query 'select min(id), max(id) from ords where id>=10'
+      --null-string ''
+      --null-non-string 0
+
+      #Incremental append
+      --table-orders \ 
+      --check-column order_date \
+      --incremental append \
+      --last-value '2014-02-28'
+
+#Import all tables
+sqoop import-all-tables
+   --connect
+   --warehouse-dir /.../db_name
+   --exclude-tables order_items
+
+#Sqoop import into hive
+   hive 
+   create database test_db;
+
+   sqoop import \
+      --connect
+      --table orders
+      --hive-import
+      --hive-database dbname
+      --create-hive-tables
+
+   #Overwrite
+   --hive-overwrite
+
+#Sqoop export from hadoop hive table to mysql table
+    create table in mysql - mandatory
+
+    sqoop export
+       --connect jdbc:mysql:/../retail_db
+       --export-dir /apps/hive/import.db/daily_revenue
+       --table table_name
+       --columns revenue, order_date
+       --input-null-string 'NA' \
+       --input-fields-terminated-by "\001"
+
+   #Update information in table during export
+   --update-key order_id
+   --update-mode updateonle (or allowinsert)
+
+   #Staging tables (if errors)
+   sqoop export
+      --staging-table daily_revenue_staging
+      --clear-staging-table   
+
+#merge data
+  sqoop merge \
+  --new-data /user/folder/text-part2 \
+  --onto /user/folder/text-part1 \
+  --target-dir /user/folder/text-both-parts \
+  --merge-key product_id;
+
+#sqoop job
+  sqoop job 
+    --create first_sqoop_job \
+    --import \
+    --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+    --table products_replica \
+    --target-dir /user/folder/products-incremental \
+    --check-column product_id \
+    --incremental append \
+    --last-value 0;
+
+  sqoop job --exec first_sqoop_job
+
+# create hive job. db and table should be created in hive before import
+  sqoop job 
+    --create hive_sqoop_job  \
+    --import \
+    --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+    --table products_replica \
+    --check-column product_id \
+    --incremental append \
+    --last-value 0
+    --hive-import \
+    --hive-table products_hive \
+    --hive-database db_name;
